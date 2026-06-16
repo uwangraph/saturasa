@@ -1,0 +1,26 @@
+name = "saturasa"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Serve static files from the frontend dist folder
+[assets]
+directory = "../frontend/dist"
+binding = "ASSETS"
+
+[[durable_objects.bindings]]
+name = "ROOM_DO"
+class_name = "RoomDurableObject"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RoomDurableObject"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "saturasa-db"
+database_id = "ce03d2ff-a156-4a18-a39e-9b33dea64f8f"
+migrations_dir = "migrations"
+
+[vars]
+# YOUTUBE_API_KEY is set via `wrangler secret put YOUTUBE_API_KEY`
