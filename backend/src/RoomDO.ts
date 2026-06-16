@@ -27,7 +27,8 @@ export class RoomDurableObject {
       volume: 80,
       hostId: '',
       createdAt: Date.now(),
-      isPublic: true
+      isPublic: true,
+      skipVotes: []
     };
 
     // Restore persisted state
@@ -147,6 +148,9 @@ export class RoomDurableObject {
       case 'VOLUME':
         this.handleVolume(senderId, event.volume);
         break;
+      case 'VOTE_SKIP':
+        this.handleVoteSkip(senderId);
+        break;
       case 'SET_ROLE':
         this.handleSetRole(senderId, event.userId, event.newRole);
         break;
@@ -219,6 +223,8 @@ export class RoomDurableObject {
   private handleNext(senderId: string) {
     if (!this.canControl(senderId)) return;
 
+    this.roomState.skipVotes = []; // Reset votes
+
     if (this.roomState.queue.length > 0) {
       this.roomState.currentSong = this.roomState.queue.shift()!;
       this.roomState.currentTime = 0;
@@ -235,6 +241,21 @@ export class RoomDurableObject {
       queue: this.roomState.queue
     });
     this.persistState();
+  }
+
+  private handleVoteSkip(senderId: string) {
+    if (!this.roomState.skipVotes.includes(senderId)) {
+      this.roomState.skipVotes.push(senderId);
+      
+      const threshold = Math.max(1, Math.floor(this.participants.size * 0.3));
+      if (this.roomState.skipVotes.length >= threshold) {
+        this.addSystemMessage("Ambang batas vote tercapai. Lagu dilewati!");
+        this.handleNext(this.roomState.hostId); // Force next as host
+      } else {
+        this.broadcast({ type: 'VOTE_SKIP', skipVotes: this.roomState.skipVotes });
+        this.persistState();
+      }
+    }
   }
 
   private handleSeek(senderId: string, time: number) {

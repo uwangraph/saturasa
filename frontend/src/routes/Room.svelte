@@ -157,6 +157,10 @@
         roomState.update((s) => ({ ...s, volume: data.volume ?? s.volume }));
         break;
 
+      case 'VOTE_SKIP':
+        roomState.update((s) => ({ ...s, skipVotes: data.skipVotes || [] }));
+        break;
+
       case 'SYNC':
         roomState.update((s) => {
           // Latency compensation
@@ -254,6 +258,10 @@
     send({ type: 'SEND_MESSAGE', text, type });
   }
 
+  function handleVoteSkip() {
+    send({ type: 'VOTE_SKIP' });
+  }
+
   function handleSetRole(userId, newRole) {
     send({ type: 'SET_ROLE', userId, newRole });
   }
@@ -331,6 +339,10 @@
           onSeek={handleSeek}
           onVolume={handleVolume}
           seekTo={(t) => playerComponent && playerComponent.seekTo(t)}
+          onVoteSkip={handleVoteSkip}
+          skipVotes={$roomState.skipVotes || []}
+          totalParticipants={$participants.length}
+          myId={myId}
         />
 
         <!-- Mobile tabs -->

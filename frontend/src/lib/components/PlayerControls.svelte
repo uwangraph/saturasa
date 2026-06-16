@@ -9,9 +9,15 @@
   export let onSeek = () => {};
   export let onVolume = () => {};
   export let seekTo = () => {};
+  export let onVoteSkip = () => {};
+  export let skipVotes = [];
+  export let totalParticipants = 0;
+  export let myId = '';
 
   $: canCtrl = canControl($myRole);
   $: vol = $roomState.volume;
+  $: hasVoted = skipVotes.includes(myId);
+  $: votePercentage = totalParticipants > 0 ? Math.round((skipVotes.length / totalParticipants) * 100) : 0;
 
   let seekPercent = 0;
   let isSeeking = false;
@@ -141,32 +147,44 @@
     </div>
 
     <!-- Play controls -->
-    <button
-      onclick={togglePlay}
-      disabled={!canCtrl || !$currentSong}
-      class="w-12 h-12 rounded-full bg-primary-500 hover:bg-primary-600 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center shadow-lg shadow-primary-500/25 transition-all active:scale-95"
-    >
-      {#if $isPlaying}
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
-        </svg>
-      {:else}
-        <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M8 5v14l11-7z"/>
-        </svg>
-      {/if}
-    </button>
+    <div class="flex items-center gap-2">
+      <button
+        onclick={onVoteSkip}
+        disabled={hasVoted || !$currentSong}
+        class="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full transition-all {hasVoted ? 'bg-primary-500/20 text-primary-400' : 'bg-dark-700 text-dark-300 hover:bg-dark-600'}"
+      >
+        <span>🗳️</span>
+        <span>{skipVotes.length}</span>
+        <span>({votePercentage}%)</span>
+      </button>
 
-    <button
-      onclick={() => canCtrl && onNext()}
-      disabled={!canCtrl}
-      aria-label="Skip ke lagu berikutnya"
-      class="w-10 h-10 rounded-full bg-dark-700 hover:bg-dark-600 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all active:scale-95"
-    >
-      <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-        <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
-      </svg>
-    </button>
+      <button
+        onclick={togglePlay}
+        disabled={!canCtrl || !$currentSong}
+        class="w-12 h-12 rounded-full bg-primary-500 hover:bg-primary-600 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center shadow-lg shadow-primary-500/25 transition-all active:scale-95"
+      >
+        {#if $isPlaying}
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+        {:else}
+          <svg class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        {/if}
+      </button>
+
+      <button
+        onclick={() => canCtrl && onNext()}
+        disabled={!canCtrl}
+        aria-label="Skip ke lagu berikutnya"
+        class="w-10 h-10 rounded-full bg-dark-700 hover:bg-dark-600 disabled:opacity-30 disabled:cursor-not-allowed text-white flex items-center justify-center transition-all active:scale-95"
+      >
+        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/>
+        </svg>
+      </button>
+    </div>
   </div>
 
   {#if !canCtrl}

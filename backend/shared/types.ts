@@ -36,6 +36,7 @@ export interface RoomState {
   hostId: string;
   createdAt: number;
   isPublic: boolean;
+  skipVotes: string[];
 }
 
 export type ServerEvent =
@@ -47,6 +48,7 @@ export type ServerEvent =
   | { type: 'ADD_SONG'; queue: Song[] }
   | { type: 'NEW_MESSAGE'; message: ChatMessage }
   | { type: 'VOLUME'; volume: number }
+  | { type: 'VOTE_SKIP'; skipVotes: string[] }
   | { type: 'SYNC'; isPlaying: boolean; currentTime: number; serverTime: number }
   | { type: 'PARTICIPANTS'; participants: Participant[]; myRole?: string }
   | { type: 'QUEUE_UPDATE'; queue: Song[] }
@@ -64,5 +66,6 @@ export type ClientEvent =
   | { type: 'REORDER_SONG'; from: number; to: number }
   | { type: 'SEND_MESSAGE'; text: string; messageType?: string }
   | { type: 'VOLUME'; volume: number }
+  | { type: 'VOTE_SKIP' }
   | { type: 'SET_ROLE'; userId: string; newRole: string }
   | { type: 'LEAVE' };

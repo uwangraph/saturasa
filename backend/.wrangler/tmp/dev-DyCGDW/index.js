@@ -66,7 +66,8 @@ var RoomDurableObject = class {
       volume: 80,
       hostId: "",
       createdAt: Date.now(),
-      isPublic: true
+      isPublic: true,
+      skipVotes: []
     };
     this.state.blockConcurrencyWhile(async () => {
       const stored = await this.state.storage.get("roomState");
@@ -160,6 +161,9 @@ var RoomDurableObject = class {
       case "VOLUME":
         this.handleVolume(senderId, event.volume);
         break;
+      case "VOTE_SKIP":
+        this.handleVoteSkip(senderId);
+        break;
       case "SET_ROLE":
         this.handleSetRole(senderId, event.userId, event.newRole);
         break;
@@ -218,6 +222,7 @@ var RoomDurableObject = class {
   handleNext(senderId) {
     if (!this.canControl(senderId))
       return;
+    this.roomState.skipVotes = [];
     if (this.roomState.queue.length > 0) {
       this.roomState.currentSong = this.roomState.queue.shift();
       this.roomState.currentTime = 0;
@@ -233,6 +238,19 @@ var RoomDurableObject = class {
       queue: this.roomState.queue
     });
     this.persistState();
+  }
+  handleVoteSkip(senderId) {
+    if (!this.roomState.skipVotes.includes(senderId)) {
+      this.roomState.skipVotes.push(senderId);
+      const threshold = Math.max(1, Math.floor(this.participants.size * 0.3));
+      if (this.roomState.skipVotes.length >= threshold) {
+        this.addSystemMessage("Ambang batas vote tercapai. Lagu dilewati!");
+        this.handleNext(this.roomState.hostId);
+      } else {
+        this.broadcast({ type: "VOTE_SKIP", skipVotes: this.roomState.skipVotes });
+        this.persistState();
+      }
+    }
   }
   handleSeek(senderId, time) {
     if (!this.canControl(senderId))
