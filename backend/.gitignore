@@ -21,3 +21,4 @@ Thumbs.db
 # Wrangler
 .dev.vars
 wrangler.toml.bak
+.wrangler/
