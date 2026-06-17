@@ -66,7 +66,7 @@
       return;
     }
     storeName(userName.trim());
-    const code = joinCode.trim().toLowerCase().replace(/\s+/g, '-');
+    const code = joinCode.trim().toUpperCase().replace(/\s+/g, '-');
     window.history.pushState({}, '', `/${code}`);
     window.dispatchEvent(new PopStateEvent('popstate'));
   }

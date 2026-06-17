@@ -15,6 +15,8 @@
   import Modal from '../lib/components/Modal.svelte';
 
   export let roomCode = '';
+  // Normalize room code to uppercase
+  roomCode = roomCode.toUpperCase();
 
   let ws = null;
   let playerComponent;
@@ -37,8 +39,9 @@
       }
     } catch (e) {
       console.error('Failed to check room existence:', e);
+      toast.error('Gagal terhubung ke server');
     }
-    
+
     connectWebSocket();
   });
 
