@@ -35,6 +35,11 @@ const handler: ExportedHandler<Env> = {
       return getRoomState(roomId, env, corsHeaders);
     }
 
+    // List public rooms
+    if (path === '/api/rooms/public' && request.method === 'GET') {
+      return listPublicRooms(env, corsHeaders);
+    }
+
     // YouTube search
     if (path === '/api/youtube/search' && request.method === 'GET') {
       return youtubeSearch(request, env, corsHeaders);
@@ -108,6 +113,17 @@ async function getRoomState(roomId: string, env: Env, headers: Record<string, st
     return new Response(res.body, { headers: { ...headers, 'Content-Type': 'application/json' } });
   } catch (e) {
     return Response.json({ error: 'Internal server error' }, { status: 500, headers });
+  }
+}
+
+async function listPublicRooms(env: Env, headers: Record<string, string>): Promise<Response> {
+  try {
+    const rooms = await env.DB.prepare(
+      'SELECT id, participant_count, created_at FROM rooms WHERE is_public = 1 ORDER BY created_at DESC LIMIT 50'
+    ).all();
+    return Response.json(rooms.results || [], { headers });
+  } catch (e) {
+    return Response.json({ error: 'Failed to list rooms' }, { status: 500, headers });
   }
 }
 
