@@ -1,7 +1,6 @@
 <script>
-  import { onMount, tick } from 'svelte';
-  import { chats, roomState } from '../stores/room.js';
-  import { formatTime } from '../utils/helpers.js';
+  import { afterUpdate } from 'svelte';
+  import { chats } from '../stores/room.js';
 
   export let onSendMessage = () => {};
 
@@ -22,14 +21,12 @@
     }
   }
 
-  // Auto-scroll on new messages
-  $: if ($chats && chatContainer) {
-    tick().then(() => {
-      if (chatContainer) {
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
-    });
-  }
+  // Auto-scroll after DOM updates
+  afterUpdate(() => {
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  });
 
   function formatTimestamp(ts) {
     if (!ts) return '';
