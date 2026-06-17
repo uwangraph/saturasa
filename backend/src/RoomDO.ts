@@ -50,9 +50,6 @@ export class RoomDurableObject {
 
     if (this.roomState.isPlaying && this.roomState.currentSong) {
       this.roomState.currentTime += dt;
-      
-      // Auto-next if we have duration (optional enhancement)
-      // For now, we just keep incrementing and rely on NEXT event
     }
   }
 
@@ -406,6 +403,14 @@ export class RoomDurableObject {
     if (this.participants.size === 0 && this.syncTimer) {
       clearInterval(this.syncTimer);
       this.syncTimer = null;
+    }
+
+    // If all participants left, clean up state after a delay
+    if (this.participants.size === 0) {
+      this.roomState.currentSong = null;
+      this.roomState.isPlaying = false;
+      this.roomState.currentTime = 0;
+      this.roomState.skipVotes = [];
     }
   }
 
